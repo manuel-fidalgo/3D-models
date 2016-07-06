@@ -1,5 +1,8 @@
 import com.jme3.app.SimpleApplication;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -7,6 +10,9 @@ import com.jme3.input.controls.Trigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.FastMath;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Ray;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
@@ -15,99 +21,103 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 
+import de.lessvoid.nifty.input.mouse.MouseInputEventProcessor;
+
 
 
 /** Basic jMonkeyEngine game template. */
 public class Main extends SimpleApplication {
 
 	Node playerNode;
-	Material mat_terrain;
+	Node entitiesNode;
+	
+	EntityGenerator generator;
+	
+	Material blue;
+	Material red;
+	Material green;
+	Material white;
+	Material yellow;
+	
+	Material[] colors;
 
-	private final static Trigger TRIGGER_COLOR = new KeyTrigger(KeyInput.KEY_SPACE);
+	private final static Trigger TRIGGER_COLOR = new KeyTrigger(MouseInput.BUTTON_LEFT);
 	private final static String MAPPING_ROTATE = "Rotate";
 
 	private ActionListener actionListener = new ActionListener() {
 		public void onAction(String name, boolean isPressed, float tpf)
 		{
-			playerNode.move(cam.getDirection());
+
 		}
 	};
 	private AnalogListener analogListener = new AnalogListener() {
 		public void onAnalog(String name, float intensity, float tpf) {
-
+			
+			if(name.equals(MAPPING_ROTATE)){
+				CollisionResults results = new CollisionResults();
+				Ray ray = new Ray(cam.getLocation(), cam.getDirection());
+				rootNode.collideWith(ray, results);
+				if (results.size() > 0) {
+					Geometry target = results.getClosestCollision().getGeometry();
+					target.setMaterial(getRandomColor());
+				} else {
+					System.out.println("Selection: Nothing" );
+				}
+			}
 		}
 	};
 
 	@Override
 	/** initialize the scene here */
 	public void simpleInitApp() {
+		
+		System.out.println(cam.getLocation().toString());
+		setUpInputManager();
+		setUpColors(true);
 
-		cam.setLocation(new Vector3f(0, 5, -10));
+		playerNode = new Node();
+		entitiesNode = new Node();
+		
+		Sphere s = new Sphere(19, 19, 1f);
+		Geometry g = new Geometry("Sphere",s);
+		g.setMaterial(blue);
+		playerNode.attachChild(g);
+
+
+		rootNode.attachChild(entitiesNode);
+		rootNode.attachChild(playerNode);
+	}
+	private Material getRandomColor(){
+		return colors[(int) (Math.abs(Math.random()*100)%5)];
+	}
+	
+	private void setUpInputManager() {
 		inputManager.addMapping(MAPPING_ROTATE, TRIGGER_COLOR);
 		inputManager.addListener(analogListener,new String[]{MAPPING_ROTATE});
 		inputManager.addListener(actionListener,new String[]{MAPPING_ROTATE});
-
-		setDisplayFps(false);
-		setDisplayStatView(false);
-
-		//Creamos tres nodos o grupos de elementos
-		playerNode = new Node();
-		Node towerNode = new Node();
-		Node creepNode = new Node();
-		Node floorNode = new Node();
-
-
-		//Creamos los materiales para los elementos
-		Material blue = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+		
+	}
+	private void setUpColors(boolean wireframe) {
+		blue = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		blue.setColor("Color", ColorRGBA.Blue);
-		Material red = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
+		blue.getAdditionalRenderState().setWireframe(wireframe);
+		
+		red = new Material(assetManager,"Common/MatDefs/Misc/Unshaded.j3md");
 		red.setColor("Color", ColorRGBA.Red);
-		red.getAdditionalRenderState().setWireframe(true);//Para sacar lo mesh
-		Material white = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+		red.getAdditionalRenderState().setWireframe(wireframe);
+		
+		white = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		white.setColor("Color",ColorRGBA.White);
-		Material yellow = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+		white.getAdditionalRenderState().setWireframe(wireframe);
+		
+		yellow = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		yellow.setColor("Color",ColorRGBA.Yellow);
-		Material green = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+		yellow.getAdditionalRenderState().setWireframe(wireframe);
+		
+		green = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		green.setColor("Color",ColorRGBA.Green);
-
-		//
-		Box floor = new Box(new Vector3f(20, 0, 20),new Vector3f(-20, -1, -20));
-		Geometry floorGeom = new Geometry("box",floor);
-		floorGeom.setMaterial(white);
-
-		Box player = new Box(new Vector3f(-1,0,-1), new Vector3f(+1,2,+1));
-		Geometry playerGeom = new Geometry("box",player);
-		playerGeom.setMaterial(yellow);
-
-		Box[] towers = new Box[6];
-		Geometry[] towersGeom = new Geometry[6];
-		for (int i = 0; i < towers.length; i++) {
-			if(i%2==0){
-				towers[i] = new Box(new Vector3f(-4,0,(i+1)*2), new Vector3f(-3,3,((i+1)*2)+1));		//En la derecha
-			}else{
-				towers[i] = new Box(new Vector3f(+4,0,(i+1)*2), new Vector3f(3,3,((i+1)*2)+1));		//En la izaquierda
-			}
-			towersGeom[i] = new Geometry("box",towers[i]);
-			towersGeom[i].setMaterial(green);
-			towerNode.attachChild(towersGeom[i]);
-		}
-		playerNode.attachChild(playerGeom);
-		floorNode.attachChild(floorGeom);
-		Geometry sp = new Geometry("box",new Sphere(16, 16, 1.0f));
-		sp.move(new Vector3f(0,4,0));
-		sp.setMaterial(red);
-		towerNode.attachChild(sp);
-
-		DirectionalLight sun = new DirectionalLight();
-		sun.setDirection(new Vector3f(0f,6f,0f));
-		sun.setColor(ColorRGBA.White);
-		rootNode.addLight(sun);
-
-		//Añadimos los nodos creados al root
-		rootNode.attachChild(floorNode);
-		rootNode.attachChild(creepNode);
-		rootNode.attachChild(towerNode);
-		rootNode.attachChild(playerNode);
+		green.getAdditionalRenderState().setWireframe(wireframe);
+		
 	}
 	@Override
 	/** (optional) Interact with update loop here */
