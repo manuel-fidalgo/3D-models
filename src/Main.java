@@ -1,27 +1,19 @@
 import com.jme3.app.SimpleApplication;
-import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.input.KeyInput;
-import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.Trigger;
-import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
-import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 
-import de.lessvoid.nifty.input.mouse.MouseInputEventProcessor;
 
 
 
@@ -41,18 +33,12 @@ public class Main extends SimpleApplication {
 	
 	Material[] colors;
 
-	private final static Trigger TRIGGER_COLOR = new KeyTrigger(MouseInput.BUTTON_LEFT);
+	private final static Trigger TRIGGER_COLOR = new KeyTrigger(KeyInput.KEY_SPACE);
 	private final static String MAPPING_ROTATE = "Rotate";
 
 	private ActionListener actionListener = new ActionListener() {
 		public void onAction(String name, boolean isPressed, float tpf)
 		{
-
-		}
-	};
-	private AnalogListener analogListener = new AnalogListener() {
-		public void onAnalog(String name, float intensity, float tpf) {
-			
 			if(name.equals(MAPPING_ROTATE)){
 				CollisionResults results = new CollisionResults();
 				Ray ray = new Ray(cam.getLocation(), cam.getDirection());
@@ -61,9 +47,14 @@ public class Main extends SimpleApplication {
 					Geometry target = results.getClosestCollision().getGeometry();
 					target.setMaterial(getRandomColor());
 				} else {
-					System.out.println("Selection: Nothing" );
+					//System.out.println("Selection: Nothing" );
 				}
 			}
+		}
+	};
+	private AnalogListener analogListener = new AnalogListener() {
+		public void onAnalog(String name, float intensity, float tpf) {
+			
 		}
 	};
 
@@ -71,24 +62,21 @@ public class Main extends SimpleApplication {
 	/** initialize the scene here */
 	public void simpleInitApp() {
 		
-		System.out.println(cam.getLocation().toString());
 		setUpInputManager();
 		setUpColors(true);
 
 		playerNode = new Node();
 		entitiesNode = new Node();
 		
-		Sphere s = new Sphere(19, 19, 1f);
-		Geometry g = new Geometry("Sphere",s);
-		g.setMaterial(blue);
-		playerNode.attachChild(g);
-
-
+		generator = new EntityGenerator(entitiesNode,colors);
+		generator.start();
+		
 		rootNode.attachChild(entitiesNode);
 		rootNode.attachChild(playerNode);
 	}
 	private Material getRandomColor(){
-		return colors[(int) (Math.abs(Math.random()*100)%5)];
+		int aleat = (int) (Math.abs(Math.random()*100)%5);
+		return colors[aleat];
 	}
 	
 	private void setUpInputManager() {
@@ -98,6 +86,7 @@ public class Main extends SimpleApplication {
 		
 	}
 	private void setUpColors(boolean wireframe) {
+		
 		blue = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		blue.setColor("Color", ColorRGBA.Blue);
 		blue.getAdditionalRenderState().setWireframe(wireframe);
@@ -117,6 +106,13 @@ public class Main extends SimpleApplication {
 		green = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
 		green.setColor("Color",ColorRGBA.Green);
 		green.getAdditionalRenderState().setWireframe(wireframe);
+		
+		colors = new Material[5];
+		colors[0] = blue;
+		colors[1] = red;
+		colors[2] = white;
+		colors[3] = yellow;
+		colors[4] = green;
 		
 	}
 	@Override
