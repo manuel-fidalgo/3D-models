@@ -42,21 +42,30 @@ public class Main extends SimpleApplication {
 	ArrayList<Geometry> entityContainer;
 
 	Random rand;
+	Quaternion q;
 
-	private static int counter=0;
+	long totalTime, currentTime;
+
+	public static long MOVEMENT_DELAY = 100; //Delayfor the movement
+	public static long CREATION_DELAY = 200;
 
 	private final static Trigger TRIGGER_COLOR = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
-	
+
 	private final static Trigger TRIGGER_RIGHT = new KeyTrigger(KeyInput.KEY_D);
 	private final static Trigger TRIGGER_LEFT = new KeyTrigger(KeyInput.KEY_A);
 
-	
+
 	private final static String MAPPING_ROTATE = "Rotate";
-	
+	private final static String MAPPING_LEFT = "Left";
+	private final static String MAPPING_RIGHT = "Right";
+
 	private void setUpInputManager() {
 		inputManager.addMapping(MAPPING_ROTATE, TRIGGER_COLOR);
-		inputManager.addListener(analogListener,new String[]{MAPPING_ROTATE});
-		inputManager.addListener(actionListener,new String[]{MAPPING_ROTATE});
+		inputManager.addMapping(MAPPING_LEFT, TRIGGER_LEFT);
+		inputManager.addMapping(MAPPING_RIGHT, TRIGGER_RIGHT);
+
+		inputManager.addListener(analogListener,new String[]{MAPPING_ROTATE,MAPPING_RIGHT,MAPPING_LEFT});
+		inputManager.addListener(actionListener,new String[]{MAPPING_ROTATE,MAPPING_RIGHT,MAPPING_LEFT});
 
 	}
 
@@ -73,6 +82,13 @@ public class Main extends SimpleApplication {
 				} else {
 					//System.out.println("Selection: Nothing" );
 				}
+			}
+			Vector3f cam_loc = cam.getLocation();
+			if(name.equals(MAPPING_RIGHT)){
+
+			}
+			if(name.equals(MAPPING_LEFT)){
+
 			}
 		}
 	};
@@ -94,6 +110,8 @@ public class Main extends SimpleApplication {
 		entitiesNode = new Node();
 		rand = new Random();
 		entityContainer = new ArrayList<Geometry>();
+		q = new Quaternion();
+		totalTime = System.currentTimeMillis();
 
 		rootNode.attachChild(entitiesNode);
 		rootNode.attachChild(playerNode);
@@ -149,33 +167,31 @@ public class Main extends SimpleApplication {
 		geom.move(getAleatVector());
 		return geom;
 	}
-
 	private Vector3f getAleatVector(){
-		//X delimitado entre 50 y -50
-		//Y delimitado entre 50 y -50
+		//X delimitado entre 20 y -20
+		//Y delimitado entre 20 y -20
 		//Z delimitado entre -300 Y -320
-		int x = rand.nextInt(101)-50;
-		int y = rand.nextInt(101)-50;
+		int x = rand.nextInt(41)-20;
+		int y = rand.nextInt(41)-20;
 		int z = rand.nextInt(21)-320;
 		return new Vector3f(x,y,z);
 	}
 	@Override
 	/** (optional) Interact with update loop here */
 	public void simpleUpdate(float tpf) {
-		if(counter==10){		//Very ineficcient delay
-			Geometry geom;
+		Geometry geom;
+		currentTime = System.currentTimeMillis();
+		if(currentTime-totalTime>=CREATION_DELAY){
 			geom = createNewEnemy();
 			entityContainer.add(geom);
 			entitiesNode.attachChild(geom);
-			Quaternion q = new Quaternion();
-			q.fromAngleAxis(1*FastMath.DEG_TO_RAD, Vector3f.UNIT_Z);
-			for(Geometry i: entityContainer){
-				i.move(new Vector3f(0,0,1));
-				i.rotate(q);
-			}
-			counter=0;
-		}else{
-			counter++;
+			totalTime = currentTime;
+		}
+		//Add a delay for the movement
+		q.fromAngleAxis(1*FastMath.DEG_TO_RAD, Vector3f.UNIT_Z);
+		for(Geometry i: entityContainer){
+			i.move(new Vector3f(0,0,1));
+			i.rotate(q);
 		}
 	}
 	@Override
