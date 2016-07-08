@@ -32,7 +32,7 @@ import com.jme3.util.SkyFactory.EnvMapType;
 /** Basic jMonkeyEngine game template. */
 public class Main extends SimpleApplication {
 
-	Node playerNode;
+	Node skyNode;
 	Node entitiesNode;
 
 	Material blue;
@@ -78,7 +78,7 @@ public class Main extends SimpleApplication {
 			if(name.equals(MAPPING_ROTATE)){
 				CollisionResults results = new CollisionResults();
 				Ray ray = new Ray(cam.getLocation(), cam.getDirection());
-				rootNode.collideWith(ray, results);
+				entitiesNode.collideWith(ray, results);
 				if (results.size() > 0) {
 					Geometry target = results.getClosestCollision().getGeometry();
 					target.setMaterial(getRandomColor());
@@ -109,7 +109,7 @@ public class Main extends SimpleApplication {
 		setUpInputManager();
 		setUpColors(true);
 
-		playerNode = new Node();
+		skyNode = new Node();
 		entitiesNode = new Node();
 		rand = new Random();
 		entityContainer = new ArrayList<Spatial>();
@@ -117,10 +117,10 @@ public class Main extends SimpleApplication {
 		totalTime = System.currentTimeMillis();
 		
 		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg",EnvMapType.SphereMap);
-	
+		skyNode.attachChild(sky);
+		
 		rootNode.attachChild(entitiesNode);
-		rootNode.attachChild(playerNode);
-		rootNode.attachChild(sky);
+		rootNode.attachChild(skyNode);
 	}
 	private void initCrossHairs() {
 		guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
