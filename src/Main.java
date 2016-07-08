@@ -20,8 +20,10 @@ import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
+import com.jme3.util.SkyFactory;
 
 
 
@@ -112,9 +114,12 @@ public class Main extends SimpleApplication {
 		entityContainer = new ArrayList<Geometry>();
 		q = new Quaternion();
 		totalTime = System.currentTimeMillis();
+//	    Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg", null);
+		
 
 		rootNode.attachChild(entitiesNode);
 		rootNode.attachChild(playerNode);
+//		rootNode.attachChild(sky);
 	}
 	private void initCrossHairs() {
 		guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
@@ -187,7 +192,7 @@ public class Main extends SimpleApplication {
 			entitiesNode.attachChild(geom);
 			totalTime = currentTime;
 		}
-		//Add a delay for the movement
+		//Add a delay for the movement...
 		q.fromAngleAxis(1*FastMath.DEG_TO_RAD, Vector3f.UNIT_Z);
 		for(Geometry i: entityContainer){
 			i.move(new Vector3f(0,0,1));
