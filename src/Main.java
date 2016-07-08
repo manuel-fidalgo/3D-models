@@ -24,6 +24,7 @@ import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
+import com.jme3.util.SkyFactory.EnvMapType;
 
 
 
@@ -41,7 +42,7 @@ public class Main extends SimpleApplication {
 	Material yellow;
 
 	Material[] colors;
-	ArrayList<Geometry> entityContainer;
+	ArrayList<Spatial> entityContainer;
 
 	Random rand;
 	Quaternion q;
@@ -49,7 +50,7 @@ public class Main extends SimpleApplication {
 	long totalTime, currentTime;
 
 	public static long MOVEMENT_DELAY = 100; //Delayfor the movement
-	public static long CREATION_DELAY = 200;
+	public static long CREATION_DELAY = 1000;
 
 	private final static Trigger TRIGGER_COLOR = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
 
@@ -111,15 +112,15 @@ public class Main extends SimpleApplication {
 		playerNode = new Node();
 		entitiesNode = new Node();
 		rand = new Random();
-		entityContainer = new ArrayList<Geometry>();
+		entityContainer = new ArrayList<Spatial>();
 		q = new Quaternion();
 		totalTime = System.currentTimeMillis();
-//	    Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg", null);
 		
-
+		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg",EnvMapType.SphereMap);
+	
 		rootNode.attachChild(entitiesNode);
 		rootNode.attachChild(playerNode);
-//		rootNode.attachChild(sky);
+		rootNode.attachChild(sky);
 	}
 	private void initCrossHairs() {
 		guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
@@ -165,12 +166,12 @@ public class Main extends SimpleApplication {
 		colors[4] = green;
 
 	}
-	private Geometry createNewEnemy() {
-		Sphere s = new Sphere(10,10,1f);
-		Geometry geom = new Geometry("Sphere",s);
-		geom.setMaterial(colors[0]);
-		geom.move(getAleatVector());
-		return geom;
+	private Spatial createNewEnemy() {
+		Spatial spat = assetManager.loadModel("plane.obj");
+		spat.scale(0.30f);
+		spat.setMaterial(colors[0]);
+		spat.move(getAleatVector());
+		return spat;
 	}
 	private Vector3f getAleatVector(){
 		//X delimitado entre 20 y -20
@@ -184,19 +185,19 @@ public class Main extends SimpleApplication {
 	@Override
 	/** (optional) Interact with update loop here */
 	public void simpleUpdate(float tpf) {
-		Geometry geom;
+		Spatial spat;
 		currentTime = System.currentTimeMillis();
 		if(currentTime-totalTime>=CREATION_DELAY){
-			geom = createNewEnemy();
-			entityContainer.add(geom);
-			entitiesNode.attachChild(geom);
+			spat = createNewEnemy();
+			entityContainer.add(spat);
+			entitiesNode.attachChild(spat);
 			totalTime = currentTime;
 		}
 		//Add a delay for the movement...
 		q.fromAngleAxis(1*FastMath.DEG_TO_RAD, Vector3f.UNIT_Z);
-		for(Geometry i: entityContainer){
+		for(Spatial i: entityContainer){
 			i.move(new Vector3f(0,0,1));
-			i.rotate(q);
+		//	i.rotate(q);
 		}
 	}
 	@Override
