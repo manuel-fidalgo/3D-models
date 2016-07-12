@@ -49,8 +49,8 @@ public class Main extends SimpleApplication {
 
 	long totalTime, currentTime;
 
-	public static long MOVEMENT_DELAY = 100; //Delayfor the movement
-	public static long CREATION_DELAY = 1000;
+	public static long MOVEMENT_DELAY = 100; 	//Delayfor the movement
+	public static long CREATION_DELAY = 1000; 	//1 second
 
 	private final static Trigger TRIGGER_COLOR = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
 
@@ -115,10 +115,10 @@ public class Main extends SimpleApplication {
 		entityContainer = new ArrayList<Spatial>();
 		q = new Quaternion();
 		totalTime = System.currentTimeMillis();
-		
+
 		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg",EnvMapType.SphereMap);
 		skyNode.attachChild(sky);
-		
+
 		rootNode.attachChild(entitiesNode);
 		rootNode.attachChild(skyNode);
 	}
@@ -169,7 +169,7 @@ public class Main extends SimpleApplication {
 	private Spatial createNewEnemy() {
 		Spatial spat = assetManager.loadModel("plane.obj");
 		spat.scale(0.30f);
-		spat.setMaterial(colors[0]);
+		//	spat.setMaterial(colors[0]);
 		spat.move(getAleatVector());
 		return spat;
 	}
@@ -187,17 +187,19 @@ public class Main extends SimpleApplication {
 	public void simpleUpdate(float tpf) {
 		Spatial spat;
 		currentTime = System.currentTimeMillis();
+		//Add a delay for the creation...
 		if(currentTime-totalTime>=CREATION_DELAY){
 			spat = createNewEnemy();
 			entityContainer.add(spat);
 			entitiesNode.attachChild(spat);
-			totalTime = currentTime;
+			currentTime = totalTime;
 		}
+
 		//Add a delay for the movement...
 		q.fromAngleAxis(1*FastMath.DEG_TO_RAD, Vector3f.UNIT_Z);
 		for(Spatial i: entityContainer){
 			i.move(new Vector3f(0,0,1));
-		//	i.rotate(q);
+			if(rand.nextInt(100)<=10) i.rotate(q);
 		}
 	}
 	@Override
@@ -208,6 +210,7 @@ public class Main extends SimpleApplication {
 		AppSettings set = new AppSettings(true);
 		set.setTitle("Just testing");
 		Main app = new Main();
+		//app.setShowSettings(false); //No muestra los ajustes
 		app.setSettings(set);
 		app.start();
 	}
