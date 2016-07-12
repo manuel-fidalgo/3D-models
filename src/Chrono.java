@@ -22,4 +22,10 @@ public class Chrono {
 	public static long getMills(){
 		return System.currentTimeMillis();
 	}
+	public void changeDelay(int newDel){
+		this.DELAY = newDel;
+	}
+	public long getDelay(){
+		return this.DELAY;
+	}
 }

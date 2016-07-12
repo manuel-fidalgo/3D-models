@@ -46,11 +46,10 @@ public class Main extends SimpleApplication {
 
 	Random rand;
 	Quaternion q;
+	Chrono creationChrono, movementChrono;
 
-	long totalTime, currentTime;
-
-	public static long MOVEMENT_DELAY = 100; 	//Delayfor the movement
-	public static long CREATION_DELAY = 1000; 	//1 second
+	public static long MOVEMENT_DELAY = 10; 	//0,01 seconds
+	public static long CREATION_DELAY = 3000; 	//3 second
 
 	private final static Trigger TRIGGER_COLOR = new MouseButtonTrigger(MouseInput.BUTTON_LEFT);
 
@@ -108,15 +107,17 @@ public class Main extends SimpleApplication {
 		initCrossHairs();
 		setUpInputManager();
 		setUpColors(true);
+		
 
 		skyNode = new Node();
 		entitiesNode = new Node();
 		rand = new Random();
 		entityContainer = new ArrayList<Spatial>();
 		q = new Quaternion();
-		totalTime = System.currentTimeMillis();
+		creationChrono = new Chrono(CREATION_DELAY);
+		movementChrono = new Chrono(MOVEMENT_DELAY);
 
-		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg",EnvMapType.SphereMap);
+		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg" ,EnvMapType.SphereMap);
 		skyNode.attachChild(sky);
 
 		rootNode.attachChild(entitiesNode);
@@ -126,11 +127,9 @@ public class Main extends SimpleApplication {
 		guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
 		BitmapText ch = new BitmapText(guiFont, false);
 		ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
-		ch.setText("+"); // crosshairs
-		ch.setLocalTranslation( // center
-				settings.getWidth() / 2 - ch.getLineWidth()/2, settings.getHeight() / 2 + ch.getLineHeight()/2, 0);
+		ch.setText("+");
+		ch.setLocalTranslation(settings.getWidth() / 2 - ch.getLineWidth()/2, settings.getHeight() / 2 + ch.getLineHeight()/2, 0);
 		guiNode.attachChild(ch);
-
 	}
 	private Material getRandomColor(){
 		int aleat = (int) (Math.abs(Math.random()*100)%4)+1;
@@ -169,16 +168,15 @@ public class Main extends SimpleApplication {
 	private Spatial createNewEnemy() {
 		Spatial spat = assetManager.loadModel("plane.obj");
 		spat.scale(0.30f);
-		//	spat.setMaterial(colors[0]);
 		spat.move(getAleatVector());
 		return spat;
 	}
 	private Vector3f getAleatVector(){
-		//X delimitado entre 20 y -20
-		//Y delimitado entre 20 y -20
+		//X delimitado entre 40 y -40
+		//Y delimitado entre 40 y -40
 		//Z delimitado entre -300 Y -320
-		int x = rand.nextInt(41)-20;
-		int y = rand.nextInt(41)-20;
+		int x = rand.nextInt(81)-40;
+		int y = rand.nextInt(81)-40;
 		int z = rand.nextInt(21)-320;
 		return new Vector3f(x,y,z);
 	}
@@ -186,20 +184,19 @@ public class Main extends SimpleApplication {
 	/** (optional) Interact with update loop here */
 	public void simpleUpdate(float tpf) {
 		Spatial spat;
-		currentTime = System.currentTimeMillis();
-		//Add a delay for the creation...
-		if(currentTime-totalTime>=CREATION_DELAY){
+		
+		if(creationChrono.isDelay()){
 			spat = createNewEnemy();
 			entityContainer.add(spat);
 			entitiesNode.attachChild(spat);
-			currentTime = totalTime;
 		}
 
-		//Add a delay for the movement...
-		q.fromAngleAxis(1*FastMath.DEG_TO_RAD, Vector3f.UNIT_Z);
-		for(Spatial i: entityContainer){
-			i.move(new Vector3f(0,0,1));
-			if(rand.nextInt(100)<=10) i.rotate(q);
+		if(movementChrono.isDelay()){
+			q.fromAngleAxis(1*FastMath.DEG_TO_RAD, Vector3f.UNIT_Z);
+			for(Spatial i: entityContainer){
+				i.move(new Vector3f(0,0,1));
+				if(rand.nextInt(100)<=10) i.rotate(q);
+			}
 		}
 	}
 	@Override
