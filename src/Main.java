@@ -2,9 +2,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.bounding.BoundingVolume.Type;
 import com.jme3.collision.CollisionResults;
 import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh.Type;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
@@ -45,8 +45,9 @@ public class Main extends SimpleApplication {
 
 	Material[] colors;
 	ArrayList<Spatial> entityContainer;
+
+	ExplosionEmitter expl;
 	
-	ParticleEmitter explosion;
 
 	Random rand;
 	Quaternion q;
@@ -84,11 +85,11 @@ public class Main extends SimpleApplication {
 				entitiesNode.collideWith(ray, results);
 				if (results.size() > 0) {
 					Geometry target = results.getClosestCollision().getGeometry();
-					rootNode.attachChild(explosion);
-					explosion.setLocalTranslation(target.getLocalTranslation());
-					explosion.emitAllParticles();
+					rootNode.attachChild(expl.getDebris());
+					rootNode.attachChild(expl.getFire());
+					expl.explode(target.getLocalTranslation());
 					target.removeFromParent();
-					
+
 				} else {
 					//System.out.println("Selection: Nothing" );
 				}
@@ -115,8 +116,7 @@ public class Main extends SimpleApplication {
 		initCrossHairs();
 		setUpInputManager();
 		setUpColors(true);
-
-
+		
 		skyNode = new Node();
 		entitiesNode = new Node();
 		rand = new Random();
@@ -124,10 +124,7 @@ public class Main extends SimpleApplication {
 		q = new Quaternion();
 		creationChrono = new Chrono(CREATION_DELAY);
 		movementChrono = new Chrono(MOVEMENT_DELAY);
-		explosion = new ParticleEmitter("Explosion", com.jme3.effect.ParticleMesh.Type.Triangle, 30);
-		Material mat_red = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
-	    mat_red.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
-		explosion.setMaterial(mat_red);
+		expl = new ExplosionEmitter(assetManager);
 
 		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg" ,EnvMapType.EquirectMap);
 		skyNode.attachChild(sky);
@@ -138,6 +135,7 @@ public class Main extends SimpleApplication {
 		rootNode.attachChild(entitiesNode);
 		rootNode.attachChild(skyNode);
 	}
+	
 	private void initCrossHairs() {
 		guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
 		BitmapText ch = new BitmapText(guiFont, false);
@@ -146,10 +144,7 @@ public class Main extends SimpleApplication {
 		ch.setLocalTranslation(settings.getWidth() / 2 - ch.getLineWidth()/2, settings.getHeight() / 2 + ch.getLineHeight()/2, 0);
 		guiNode.attachChild(ch);
 	}
-	private Material getRandomColor(){
-		int aleat = (int) (Math.abs(Math.random()*100)%4)+1;
-		return colors[aleat];
-	}
+
 	private void setUpColors(boolean wireframe) {
 
 		blue = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
@@ -181,10 +176,10 @@ public class Main extends SimpleApplication {
 
 	}
 	private Spatial createNewEnemy() {
-			Spatial spat = assetManager.loadModel("plane.obj");
-			spat.scale(0.30f);
-			spat.move(getAleatVector());
-			return spat;
+		Spatial spat = assetManager.loadModel("plane.obj");
+		spat.scale(0.30f);
+		spat.move(getAleatVector());
+		return spat;
 	}
 
 	private Vector3f getAleatVector(){

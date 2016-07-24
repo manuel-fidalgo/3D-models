@@ -14,8 +14,16 @@ public class Plane extends Spatial{
 	public static final int LEFT = 0;
 	public static final int RIGHT = 1;
 	
+	Chrono explosionchrono;
+	static int EXPLOSION_DELAY = 100; //100 miliseconds
+	
 	public Plane(){
 		this.currentAngle = 0;
+		this.explosionchrono = new Chrono(EXPLOSION_DELAY);
+	}
+	
+	public void explode(){
+		
 	}
 	
 	@Override
