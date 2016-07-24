@@ -2,7 +2,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.bounding.BoundingVolume.Type;
 import com.jme3.collision.CollisionResults;
+import com.jme3.effect.ParticleEmitter;
 import com.jme3.font.BitmapText;
 import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
@@ -11,6 +13,7 @@ import com.jme3.input.controls.AnalogListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.input.controls.Trigger;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -21,7 +24,6 @@ import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
-import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
 import com.jme3.util.SkyFactory.EnvMapType;
@@ -43,6 +45,8 @@ public class Main extends SimpleApplication {
 
 	Material[] colors;
 	ArrayList<Spatial> entityContainer;
+	
+	ParticleEmitter explosion;
 
 	Random rand;
 	Quaternion q;
@@ -80,12 +84,16 @@ public class Main extends SimpleApplication {
 				entitiesNode.collideWith(ray, results);
 				if (results.size() > 0) {
 					Geometry target = results.getClosestCollision().getGeometry();
-					target.setMaterial(getRandomColor());
+					rootNode.attachChild(explosion);
+					explosion.setLocalTranslation(target.getLocalTranslation());
+					explosion.emitAllParticles();
+					target.removeFromParent();
+					
 				} else {
 					//System.out.println("Selection: Nothing" );
 				}
 			}
-			Vector3f cam_loc = cam.getLocation();
+			//			Vector3f cam_loc = cam.getLocation();
 			if(name.equals(MAPPING_RIGHT)){
 
 			}
@@ -107,7 +115,7 @@ public class Main extends SimpleApplication {
 		initCrossHairs();
 		setUpInputManager();
 		setUpColors(true);
-		
+
 
 		skyNode = new Node();
 		entitiesNode = new Node();
@@ -116,10 +124,17 @@ public class Main extends SimpleApplication {
 		q = new Quaternion();
 		creationChrono = new Chrono(CREATION_DELAY);
 		movementChrono = new Chrono(MOVEMENT_DELAY);
+		explosion = new ParticleEmitter("Explosion", com.jme3.effect.ParticleMesh.Type.Triangle, 30);
+		Material mat_red = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+	    mat_red.setTexture("Texture", assetManager.loadTexture("Effects/Explosion/flame.png"));
+		explosion.setMaterial(mat_red);
 
-		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg" ,EnvMapType.SphereMap);
+		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg" ,EnvMapType.EquirectMap);
 		skyNode.attachChild(sky);
+		DirectionalLight sun = new DirectionalLight();
+		sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f).normalizeLocal());
 
+		rootNode.addLight(sun);
 		rootNode.attachChild(entitiesNode);
 		rootNode.attachChild(skyNode);
 	}
@@ -166,25 +181,24 @@ public class Main extends SimpleApplication {
 
 	}
 	private Spatial createNewEnemy() {
-		Spatial spat = assetManager.loadModel("plane.obj");
-		spat.scale(0.30f);
-		spat.move(getAleatVector());
-		return spat;
+			Spatial spat = assetManager.loadModel("plane.obj");
+			spat.scale(0.30f);
+			spat.move(getAleatVector());
+			return spat;
 	}
+
 	private Vector3f getAleatVector(){
-		//X delimitado entre 40 y -40
-		//Y delimitado entre 40 y -40
-		//Z delimitado entre -300 Y -320
-		int x = rand.nextInt(81)-40;
-		int y = rand.nextInt(81)-40;
-		int z = rand.nextInt(21)-320;
+		int x = rand.nextInt(81)-40; //between 40 and -40
+		int y = rand.nextInt(81)-40; //between 40 and -40
+		int z = rand.nextInt(21)-320; //between 300 and -320
 		return new Vector3f(x,y,z);
+
 	}
 	@Override
 	/** (optional) Interact with update loop here */
 	public void simpleUpdate(float tpf) {
 		Spatial spat;
-		
+
 		if(creationChrono.isDelay()){
 			spat = createNewEnemy();
 			entityContainer.add(spat);

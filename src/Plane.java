@@ -20,43 +20,36 @@ public class Plane extends Spatial{
 	
 	@Override
 	public int collideWith(Collidable arg0, CollisionResults arg1) throws UnsupportedCollisionException {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	protected void breadthFirstTraversal(SceneGraphVisitor arg0, Queue<Spatial> arg1) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void depthFirstTraversal(SceneGraphVisitor arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public int getTriangleCount() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public int getVertexCount() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public void setModelBound(BoundingVolume arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void updateModelBound() {
-		// TODO Auto-generated method stub
 		
 	}
 
