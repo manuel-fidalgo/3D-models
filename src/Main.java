@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import com.jme3.app.SimpleApplication;
@@ -96,7 +97,7 @@ public class Main extends SimpleApplication {
 			}
 			//			Vector3f cam_loc = cam.getLocation();
 			if(name.equals(MAPPING_RIGHT)){
-
+				
 			}
 			if(name.equals(MAPPING_LEFT)){
 
@@ -116,6 +117,8 @@ public class Main extends SimpleApplication {
 		initCrossHairs();
 		setUpInputManager();
 		setUpColors(true);
+		setDisplayFps(false);
+		setDisplayStatView(false);
 		
 		skyNode = new Node();
 		entitiesNode = new Node();
@@ -126,7 +129,7 @@ public class Main extends SimpleApplication {
 		movementChrono = new Chrono(MOVEMENT_DELAY);
 		expl = new ExplosionEmitter(assetManager);
 
-		Spatial sky = SkyFactory.createSky(assetManager, "Skysphere.jpg" ,EnvMapType.EquirectMap);
+		Spatial sky = SkyFactory.createSky(assetManager, "sky_1.png" ,EnvMapType.EquirectMap);
 		skyNode.attachChild(sky);
 		DirectionalLight sun = new DirectionalLight();
 		sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f).normalizeLocal());
@@ -134,6 +137,7 @@ public class Main extends SimpleApplication {
 		rootNode.addLight(sun);
 		rootNode.attachChild(entitiesNode);
 		rootNode.attachChild(skyNode);
+		
 	}
 	
 	private void initCrossHairs() {
