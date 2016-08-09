@@ -131,6 +131,7 @@ public class Main extends SimpleApplication {
 
 		Spatial sky = SkyFactory.createSky(assetManager, "sky_1.png" ,EnvMapType.EquirectMap);
 		skyNode.attachChild(sky);
+		
 		DirectionalLight sun = new DirectionalLight();
 		sun.setDirection(new Vector3f(-0.1f, -0.7f, -1.0f).normalizeLocal());
 
@@ -180,7 +181,7 @@ public class Main extends SimpleApplication {
 
 	}
 	private Spatial createNewEnemy() {
-		Spatial spat = assetManager.loadModel("plane.obj");
+		Spatial spat = assetManager.loadModel("B-747.obj");
 		spat.scale(0.30f);
 		spat.move(getAleatVector());
 		return spat;
